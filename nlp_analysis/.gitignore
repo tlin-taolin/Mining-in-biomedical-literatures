@@ -1,0 +1,5 @@
+model/
+*analysis/project*
+*analysis/target*
+.ipynb_checkpoints*
+*.ipynb*
