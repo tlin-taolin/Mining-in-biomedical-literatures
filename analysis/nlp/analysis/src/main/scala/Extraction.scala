@@ -1,6 +1,7 @@
 import java.io.File
 import scala.io.Source
 import scala.util.parsing.json._
+import scala.util.matching.Regex
 
 case class MapTuple(value: Map[String, List[String]])
 
@@ -12,14 +13,13 @@ case class MapTuple(value: Map[String, List[String]])
 
 
 object utilities {
-	def loadsJson(path: String): List[File] = {
+	def loadJson(path: String): List[String] = {
 		val parsedFiles: List[File] = new File(path).listFiles.filter(_.isFile).toList
-		val docs: List[String] = parsedFiles.map(parse(_))
-
-		parsedFiles
+		val docs: List[String] = parsedFiles.map(parseJson(_))
+		docs
 	}
 
-	def parse(file: File): String = {
+	def parseJson(file: File): String = {
 		println("Processing :" + file.toString())
 		val t: Iterator[String] = Source.fromFile(file).getLines()
 		JSON.parseFull(t.toList(0)) match {
@@ -28,11 +28,22 @@ object utilities {
 		}
 	}
 
+	def loadText(path: String): List[String] = {
+		val docs: List[String] = Source.fromFile(path).getLines
+									   .mkString("\n").split("\n").toList
+		val docsList: List[List[String]] = docs.map(_.split("""\s+""").toList)
+		println(docs)
+		println(docsList)
+		docs
+	}
+
 }
 
 object Extraction {
 	def main(args: Array[String]): Unit = {
-		val dataPath: String = "../data/parsed"
-		val lines: List[File] = utilities.loadsJson(dataPath)
+		val dataDir: String = "../data/parsed"
+		val dataPath: String = "../data/test.txt"
+		// val linesJson: List[String] = utilities.loadJson(dataDir)
+		val linesText: List[String] = utilities.loadText(dataPath)
 	}
 }

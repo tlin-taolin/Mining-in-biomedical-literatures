@@ -11,9 +11,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-logging.basicConfig(level=logging.DEBUG,
-                 format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                 )
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
 nltk.data.path.append("/nltk")
 
 

@@ -6,6 +6,8 @@ from parse_hp import *
 import nltk
 import re
 
+nltk.data.path.append("/nltk")
+
 
 def split_names(names):
     return [re.split("\s", name) for name in names]

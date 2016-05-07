@@ -6,9 +6,7 @@ import logging
 import utilities
 from gensim.models import word2vec
 
-logging.basicConfig(level=logging.DEBUG,
-                 format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                 )
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
 nltk.data.path.append("/nltk")
 
 

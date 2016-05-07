@@ -6,9 +6,7 @@ import nltk
 import logging
 import utilities
 
-logging.basicConfig(level=logging.DEBUG,
-                 format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
-
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
 nltk.data.path.append("/nltk")
 
 
@@ -41,16 +39,22 @@ def format_file(data):
 
 
 def main(in_path):
-    paths = utilities.list_files(in_path)
+    paths = utilities.list_files(in_path + "parsed/")
+    utilities.mkdir(in_path, "parsed_all/abstract/")
+    utilities.mkdir(in_path, "parsed_all/doc/")
+
     logging.info('Start Cleaning...')
     for p in paths:
-        logging.info('Clean document from the following path: ' + p)
-        sdata, is_valid = utilities.check_file_size(p)
+        logging.info('Cleaning document from the following path: ' + p)
+        sdata, is_valid = utilities.filter_by_file_size(p)
         if not is_valid:
             utilities.delete_file(p)
             continue
         formated = format_file(sdata)
         utilities.write_to_json(formated, p)
+        # logging.info('Write document to following path...')
+        utilities.append_to_file(formated["abstract"], in_path + "parsed_all/abstract/")
+        utilities.append_to_file(formated["body"], in_path + "parsed_all/doc/")
 
 
 if __name__ == '__main__':

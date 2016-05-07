@@ -5,16 +5,17 @@ import json
 import logging
 import utilities
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    )
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
 
 
 def read_from_json(in_path):
+    to_be_parse = in_path + "raw/" + "pmcdoc.json"
+
     logging.info('Start Parsing...')
-    with open(in_path + "raw/" + "pmcdoc.json", "rb") as f:
-        json_data = f.readlines()
+    with open(to_be_parse, "rb") as f:
         utilities.mkdir(in_path, "parsed/")
+
+        json_data = f.readlines()
         for data in json_data:
             tmp = json.loads(data)
             id, content = extract_clean_data(tmp)

@@ -66,7 +66,6 @@ def extract(line):
                 extracted[sl[0]] = re.split(r'"', sl[1])[1]
             except:
                 extracted[sl[0]] = sl[1].strip()
-
     return extracted
 
 
@@ -90,15 +89,15 @@ def output_data(nodes, out_path):
 
     with open(out_path, 'a') as wo:
         for node in nodes.values():
-            out_str = (node.id + "\n" + node.name + "\n" + node.defi + "\n" + "\t".join(node.synonym) + "\n" + "\t".join(map(lambda n: n.id, node.is_a)) + "\n\n\n")
+            out_str = (node.id + ";" + node.name + ";" + node.defi + ";" + ",".join(node.synonym) + ";" + ",".join(map(lambda n: n.id, node.is_a)) + "\n")
             try:
                 wo.write(out_str.encode("utf-8"))
-            except Exception as e:
+            except:
                 print out_str
 
 if __name__ == '__main__':
-    path = "../data/humanphenotype.obo"
-    out_path = "../data/parsed_hp"
+    path = "data/humanphenotype.obo"
+    out_path = "data/parsed_hp"
     lines = read_data(path)
     cleaned_lines = clean_data(lines)
     parsed_lines = parsing(cleaned_lines)

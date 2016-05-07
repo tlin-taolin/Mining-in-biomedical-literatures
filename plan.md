@@ -1,15 +1,22 @@
-[x] Use scripts to deploy a computation cluster on the top of Google cloud.
+- [ ] how to correctly split the sentence.
+
+* some notations, like `Sep.` also inculdes `.`, but it is not the end of a sentence.
+* A strategy should be proposed to cope with these issues.
 
 ---
 
-[] Download some public datasets, and apply my approaches on these datasets.
+- [x] Use scripts to deploy a computation cluster on the top of Google cloud.
+
+---
+
+- [ ] Download some public datasets, and apply my approaches on these datasets.
 
 * It can be either a baseline algorithm or as an auxiliary for my approach.
 * It can be used as an evaluation.
 
 ---
 
-[] Apply traditional approach to extract the relationship on my dataset, and tried to use statistical approach to quantify the relationship.
+- [ ] Apply traditional approach to extract the relationship on my dataset, and tried to use statistical approach to quantify the relationship.
 
 * e.g., co-occurrence
 
@@ -19,6 +26,11 @@
 1. obtain word2vec
 2. combine/merge the word2vec of the phenotype
 3. inspired by the intrinsic evaluation, try to get the relationship word2vec of each two phenotype word2vec. And output it to the dataset.
+    * calculate the distance of each two phenotype word2vec.
+    * for each phenotype, find its k-nearest neighbors / build the minimal-spanning-tree and then do the community detection.
+    * using the relationship described above to build a graph.
+    * reformat the correct relationship of phenotype to a graph.
+    * calculate the similarity of these two graph, and then to obtain a score.
 4. discover the pattern among the dataset produced by step 3. e.g., unsupervised clustering, find the most frequent relationship pattern.
 
 some basic idea:

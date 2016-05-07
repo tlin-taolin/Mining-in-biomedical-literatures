@@ -20,3 +20,6 @@ RUN pip install --no-cache-dir scikit-learn
 
 # install ipython
 RUN pip install --no-cache-dir ipython
+
+# install joblib
+RUN pip install --no-cache-dir joblib
