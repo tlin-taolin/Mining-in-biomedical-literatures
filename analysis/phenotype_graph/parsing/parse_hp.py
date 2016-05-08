@@ -89,7 +89,7 @@ def output_data(nodes, out_path):
 
     with open(out_path, 'a') as wo:
         for node in nodes.values():
-            out_str = (node.id + ";" + node.name + ";" + node.defi + ";" + ",".join(node.synonym) + ";" + ",".join(map(lambda n: n.id, node.is_a)) + "\n")
+            out_str = (node.id + "::" + node.name + "::" + node.defi + "::" + ",".join(node.synonym) + "::" + ",".join(map(lambda n: n.id, node.is_a)) + "\n")
             try:
                 wo.write(out_str.encode("utf-8"))
             except:

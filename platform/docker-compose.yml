@@ -1,0 +1,30 @@
+version: '2'
+services:
+    python-basis:
+        build: ./python-basis/
+        image: itamtao/python-basis
+    scipy-dev:
+        build: ./scipy-dev/
+        image: itamtao/scipy-dev
+        depends_on:
+          - python-basis
+    nltk:
+        build: ./nltk/
+        image: itamtao/nltk
+        depends_on:
+          - scipy-dev
+    snap:
+        build: ./snap-dev/
+        image: itamtao/snap-dev
+        depends_on:
+          - nltk
+    scrapy:
+        build: ./scrapy/
+        image: itamtao/scrapy
+        depends_on:
+          - python-basis
+    scrapy-mongodb:
+        build: ./scrapy-mongodb/
+        image: itamtao/scrapy-mongodb
+        depends_on:
+          - scrapy

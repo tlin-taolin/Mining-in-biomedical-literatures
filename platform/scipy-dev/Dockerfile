@@ -23,3 +23,6 @@ RUN pip install --no-cache-dir ipython
 
 # install joblib
 RUN pip install --no-cache-dir joblib
+
+# install pandas
+RUN pip install --no-cache-dir pandas

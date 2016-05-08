@@ -21,7 +21,7 @@ def read_parsed_hp_from_file(in_path):
 def extract_info_from_parsed_hp(lines):
     nodes = dict()
     for line in lines:
-        elements = line.split(";")
+        elements = line.split("::")
         id = int(elements[0])
         name = elements[1]
         isa = elements[4].strip("\n").split(",")
