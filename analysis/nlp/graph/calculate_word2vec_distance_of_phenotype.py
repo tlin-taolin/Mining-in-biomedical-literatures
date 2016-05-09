@@ -11,7 +11,7 @@ from gensim.models import word2vec
 from joblib import Parallel, delayed
 
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', )
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', )
 
 
 def load_models(model_root_path):
@@ -40,9 +40,29 @@ def find_best_model(name_model_pairs):
 
 def parse_phenotype(path):
     logging.info("Parse phenotypes...")
+
     with open(path, "r") as f:
-        in_data = f.readlines()
-    return [ind.strip("\n").split("::")[1].split(" ") for ind in in_data]
+        lines = f.readlines()
+
+    id_map_isa = {}
+    id_map_phase = {}
+    phase_map_id = {}
+    words_list = []
+
+    for line in lines:
+        elements = line.strip("\n").split("::")
+        id = elements[0]
+        phase = elements[1]
+        words = phase.split(" ")
+        isa = elements[4].split(",")
+        id_map_isa[id] = isa
+        id_map_phase[id] = phase
+        words_list.append(words)
+        # corner case: there exists phenotype with the same name
+        # but with different id and definiation.
+        phase_map_id[phase] = id
+
+    return id_map_isa, id_map_phase, phase_map_id, words_list
 
 
 def map_phases_to_vec(phase_dict, phases):
@@ -74,32 +94,16 @@ def map_word_to_vec(model, word, dim):
     return vec
 
 
-def extract_potential_index(phases):
-    id_map_isa = {}
-    name_map_id = {}
+def extract_potential_index(id_map_isa, id_map_phase, phase_map_id):
+
     id_pairs = set()
     waiting = deque([])
-    phenotype_path = "../phenotype_graph/data/parsed_hp"
-    with open(phenotype_path, "r") as o:
-        lines = o.readlines()
-    for line in lines:
-        elements = line.split("::")
-        id = elements[0]
-        name = elements[1]
-        isa = elements[4].strip("\n").split(",")
-        id_map_isa[id] = isa
-        # corner case: there exists phenotype with the same name
-        # but with different id and definiation.
-        name_map_id[name] = id
-
-    map_name_to_ids = lambda name: name_map_id[name]
-
-    names = list(name_map_id.keys())
-    ids = name_map_id.values()
-    map_id_to_ind = lambda id: phases.index(names[ids.index(id)])
+    phases = list(phase_map_id.keys())
+    map_phase_to_ids = lambda phase: phase_map_id[phase]
+    map_id_phase = lambda id: id_map_phase[id]
 
     for phase in phases:
-        id = map_name_to_ids(phase)
+        id = map_phase_to_ids(phase)
         isas = id_map_isa[id]
         for isa in isas:
             if isa != "":
@@ -116,52 +120,55 @@ def extract_potential_index(phases):
             if ntuple not in id_pairs:
                 id_pairs.add(ntuple)
                 waiting.append(ntuple)
-    id_pairs = list(id_pairs)
+    raw_id_pairs = list(id_pairs)
 
-    logging.info("Generate {r} raw pairs (ind)..." .format(r=len(id_pairs)))
-    index_pairs = []
-    for pair in id_pairs:
+    logging.info("Generate {r} raw pairs (ind)..." .format(r=len(raw_id_pairs)))
+    id_pairs = []
+    for pair in raw_id_pairs:
         if pair[1] == "":
             continue
         try:
-            tmp = (map_id_to_ind(pair[0]), map_id_to_ind(pair[1]))
-            index_pairs.append(tmp)
+            tmp = pair + (map_id_phase(pair[0]), map_id_phase(pair[1]))
+            id_pairs.append(tmp)
         except:
             pass
-
-    logging.info("Generate {r} pairs (ind)..." .format(r=len(index_pairs)))
-    return index_pairs
-
-
-def generate_pairs(phase_list):
-    logging.info("Generate pairs ...")
-    indexs = xrange(0, len(phase_list))
-    return [(ind1, ind2) for ind1 in indexs for ind2 in indexs if ind1 < ind2]
+    logging.info("Generate {r} pairs (ind)..." .format(r=len(id_pairs)))
+    return id_pairs
 
 
-def cal_euclidean_distance(phases_dict, keys, i, j):
-    n_i = keys[i]
-    n_j = keys[j]
-    v1 = phases_dict[n_i]
-    v2 = phases_dict[n_j]
-    logging.info("Calculate the distance between <" + n_i + "> and <" + n_j + "> ...")
+def generate_pairs(phase_map_id, id_map_phase):
+    logging.info("Generate complete pairs ...")
+    ids = phase_map_id.values()
+    pairs = []
+    for ind1, id1 in enumerate(ids):
+        for ind2, id2 in enumerate(ids):
+            if ind1 <= ind2:
+                pairs.append((id1, id2, id_map_phase[id1], id_map_phase[id2]))
+    return pairs
+
+
+def cal_euclidean_distance(phases_dict, info):
+    phase1 = info[2]
+    phase2 = info[3]
+    v1 = phases_dict[phase1]
+    v2 = phases_dict[phase2]
+    logging.debug("Calculate the distance between <" + phase1 + "> and <" + phase2 + "> ...")
     diff = v1 - v2
     distance = np.dot(diff.T, diff)
-    return n_i, n_j, str(math.sqrt(distance))
+    return info[0], info[1], phase1, phase2, str(math.sqrt(distance))
 
 
-def cal_pairwise_distance_by_thread(phases_dict, index_pairs, num_process=4):
-    keys = list(phases_dict.keys())
-    logging.info("Calculate pairwise distance, existing " + str(len(index_pairs)) + " pairs ...")
+def cal_pairwise_distance_by_thread(phases_dict, id_pairs, num_process=4):
+    logging.info("Calculate pairwise distance, existing "+str(len(id_pairs))+" pairs ...")
     return Parallel(n_jobs=num_process, backend="threading")(delayed(
-        cal_euclidean_distance)(phases_dict, keys, i, j) for i, j in index_pairs)
+        cal_euclidean_distance)(phases_dict, info) for info in id_pairs)
 
 
 def write_pairwise_distance_to_file(pairwise_distance, out_path):
     out = ""
     for x in pairwise_distance:
-        out += x[0] + "\t" + x[1] + "\t" + x[2] + "\n"
-        out += x[1] + "\t" + x[0] + "\t" + x[2] + "\n"
+        out += x[0]+"\t"+x[1]+"\t"+x[2]+"\t"+x[3]+"\t"+x[4]+"\n"
+        out += x[1]+"\t"+x[0]+"\t"+x[3]+"\t"+x[2]+"\t"+x[4]+"\n"
     with open(out_path, "w") as f:
         f.write(out)
 
@@ -170,13 +177,12 @@ def main(model_path, phenotype_path, distances_pairs_path):
     model_pairs = load_models(model_path)
     best_model = find_best_model(model_pairs)
     word_model = load_model(best_model)
-    phenotypes = parse_phenotype(phenotype_path)
-    words_dict = map_word2vec_to_dict(word_model, phenotypes)
-    phases_dict = map_phases_to_vec(words_dict, phenotypes)
-    phases = list(phases_dict.keys())
-    # index_pairs = generate_pairs(phases)
-    index_pairs = extract_potential_index(phases)
-    distances = cal_pairwise_distance_by_thread(phases_dict, index_pairs, 5)
+    id_map_isa, id_map_phase, phase_map_id, words_list = parse_phenotype(phenotype_path)
+    words_dict = map_word2vec_to_dict(word_model, words_list)
+    phases_dict = map_phases_to_vec(words_dict, words_list)
+    # id_pairs = generate_pairs(phase_map_id, id_map_phase)
+    id_pairs = extract_potential_index(id_map_isa, id_map_phase, phase_map_id)
+    distances = cal_pairwise_distance_by_thread(phases_dict, id_pairs, 5)
     write_pairwise_distance_to_file(distances, distances_pairs_path)
 
 

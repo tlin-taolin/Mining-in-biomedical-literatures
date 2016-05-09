@@ -9,12 +9,12 @@ preprocessing_pipeline:
 extract_doc_feature:
 	python parsing/extract_doc_feature.py
 calculate_word2vec_distance_of_phenotype:
-	python parsing/calculate_word2vec_distance_of_phenotype.py
+	python graph/calculate_word2vec_distance_of_phenotype.py
 extract_relationship_of_phenotype:
-	python parsing/extract_relationship_phenotype.py
+	python graph/extract_relationship_phenotype.py
 analyze_pipeline:
-	python parsing/calculate_word2vec_distance_of_phenotype.py
-	python parsing/extract_relationship_phenotype.py
+	python graph/calculate_word2vec_distance_of_phenotype.py
+	python graph/extract_relationship_phenotype.py
 
 ######### Scala/Spark based #########
 extract_features_spark:

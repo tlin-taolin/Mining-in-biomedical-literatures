@@ -3,14 +3,7 @@
 # using the predifined relationship to build a graph.
 
 from snap import *
-
-
-class Node(object):
-    def __init__(self, id, name, isa):
-        super(Node, self).__init__()
-        self.id = id
-        self.name = name
-        self.isa = isa
+from node import Node
 
 
 def read_parsed_hp_from_file(in_path):
