@@ -42,7 +42,7 @@ class PubmedDoc(object):
     def get_pmc(self, query):
         pmc_file = DATABASE_POC + "PMC-" + pmc_id + "-.xml"
         if not self.check_local_pmc(pmc_file):
-            to_store = urlopen(query).read()
+            to_store = urlopen(query, timeout=TIMEOUT).read()
             with open(pmc_file, "w") as to_xml:
                 to_xml.write(to_store)
             return to_store
@@ -55,7 +55,7 @@ class PubmedDoc(object):
         query = self.baseURL + "efetch.fcgi?db=pmc&id={id}" . format(id=pmc_id)
         self.logger.info("search the content of pmc document based on its 'id'={id}. searching url={url}" . format(id=pmc_id, url=query))
         try:
-            content = BS(urlopen(query).read(), 'lxml')
+            content = BS(urlopen(query, timeout=TIMEOUT).read(), 'lxml')
         except:
             content = ""
 
@@ -96,7 +96,7 @@ class PubmedDoc(object):
         request = Request(url, None, headers)
 
         try:
-            response = urlopen(request, timeout=10)
+            response = urlopen(request, timeout=TIMEOUT)
             data = response.read()
             response.close()
 

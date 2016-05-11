@@ -1,6 +1,7 @@
 # Define Global variable
 
-DOWNLOAD_DELAY = 1
+TIMEOUT=10
+DOWNLOAD_DELAY = 2
 DATABASE_LOCATION = "mongodb"
 DATABASE_PORT = 27017
 MODE = False

@@ -1,5 +1,7 @@
 HOST=hpc-8
-CODE=nlp_analysis
+# CODE=analysis
+CODE=data_crawler
+
 
 start_cloud:
 	gcloud compute instances start ${HOST}
@@ -13,5 +15,4 @@ cp_code:
 
 close_cloud:
 	gcloud compute instances stop ${HOST}
-
 

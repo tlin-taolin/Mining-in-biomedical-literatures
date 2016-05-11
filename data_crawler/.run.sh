@@ -1,6 +1,6 @@
 DEBUG=false
 # run the command
-cp ../phenotype_graph/data/ngram_name_tokens db/
+cp ../analysis/nlp/data/graph/parsed_name db/
 sudo rm -rf db/tmp/
 docker exec crawl python '/home/tlin/notebooks/start.py'
 

@@ -25,7 +25,7 @@ class PubmedId(object):
     def search_id_list(self, debug=False):
         query = self.baseURL + "esearch.fcgi?db={database}&term={term}&usehistory=y" . format(database=self.option.database, term=self.option.term)
         self.logger.info("search id based on 'database'={d} and 'term'={t}. searching url={url}" . format(d=self.option.database, t=self.option.term, url=query))
-        content = str(BS(urlopen(query).read(), "lxml"))
+        content = str(BS(urlopen(query, timeout=TIMEOUT).read(), "lxml"))
         parsed_esearch = self.parse_esearchresult(content)
         self.logger.debug("get content:\n{d}" . format(d=content))
         self.logger.info("esearchresult (total): count={c}, querykey={q}, webenv={w}" . format(c=parsed_esearch["count"], q=parsed_esearch["querykey"], w=parsed_esearch["webenv"]))
@@ -38,7 +38,7 @@ class PubmedId(object):
             sub_query += "&query_key={q}&WebEnv={w}" .format(q=parsed_esearch["querykey"], w=parsed_esearch["webenv"])
             sub_query += "&retstart={start}&retmax={retmax}" . format(start=retstart, retmax=self.option.retmax)
             self.logger.debug("search id based on history{h}" . format(h=sub_query))
-            tmp = str(BS(urlopen(sub_query).read(), "lxml"))
+            tmp = str(BS(urlopen(sub_query, timeout=TIMEOUT).read(), "lxml"))
             searched_result += self.basic_parser(r"<id>(.*?)</id>", tmp)
         self.logger.info("esearchresult (recovered): count={c}, retmax={r}" . format(c=len(searched_result), r=self.option.retmax))
         return searched_result

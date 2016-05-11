@@ -95,12 +95,24 @@ def output_data(nodes, out_path):
             except:
                 print out_str
 
+
+def output_name(names, out_path):
+    if os.path.exists(out_path):
+        os.remove(out_path)
+
+    with open(out_path, 'a') as wo:
+        out = "\n".join(names)
+        wo.write(out.encode("utf-8"))
+
+
 if __name__ == '__main__':
-    path = "data/humanphenotype.obo"
-    out_path = "data/parsed_hp"
+    path = "data/graph/humanphenotype.obo"
+    out_all_path = "data/graph/parsed_hp"
+    out_name_path = "data/graph/parsed_name"
     lines = read_data(path)
     cleaned_lines = clean_data(lines)
     parsed_lines = parsing(cleaned_lines)
     nodes = build_nodes(parsed_lines)
     names = extract_names(nodes)
-    output_data(nodes, out_path)
+    output_data(nodes, out_all_path)
+    output_name(names, out_name_path)

@@ -13,9 +13,9 @@ services:
         image: itamtao/nltk
         depends_on:
           - scipy-dev
-    snap:
-        build: ./snap-dev/
-        image: itamtao/snap-dev
+    graph:
+        build: ./graph-dev/
+        image: itamtao/graph-dev
         depends_on:
           - nltk
     scrapy:

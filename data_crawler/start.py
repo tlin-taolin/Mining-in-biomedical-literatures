@@ -31,13 +31,14 @@ def main(path, terms):
 
 
 def build_search_terms():
-    with open("db/ngram_name_tokens", "r") as open_term:
+    with open("db/parsed_name", "r") as open_term:
         terms = open_term.readlines()
     search_terms = []
     for term in terms:
         tmp = re.split("\s", term.strip("\n"))
         search_terms.append("+".join(tmp))
     return search_terms
+
 
 # Main entry
 if __name__ == '__main__':

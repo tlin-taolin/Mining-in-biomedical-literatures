@@ -5,3 +5,4 @@ model/*
 .ipynb_checkpoints*
 *.ipynb*
 .ensime_cache/
+figures/*

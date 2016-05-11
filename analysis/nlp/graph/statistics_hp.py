@@ -46,8 +46,8 @@ def output_name_tokens(file_name, tokens):
 
 
 if __name__ == '__main__':
-    path = "../data/humanphenotype.obo"
-    out_path = "../data/parsed_hp"
+    path = "data/graph/humanphenotype.obo"
+    out_path = "data/graph/parsed_hp"
     lines = read_data(path)
     cleaned_lines = clean_data(lines)
     parsed_lines = parsing(cleaned_lines)

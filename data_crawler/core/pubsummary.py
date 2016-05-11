@@ -17,6 +17,7 @@ from logger import Logger
 from urllib2 import urlopen
 from bs4 import BeautifulSoup as BS
 from pyquery import PyQuery as pq
+from settings.parameters import *
 
 
 class PubmedSummary(object):
@@ -31,22 +32,26 @@ class PubmedSummary(object):
         query = self.baseURL + "esummary.fcgi?db={database}&id={id}&rettype=abstract&retmode=text" . format(database=db, id=pid)
         self.logger.info("search documents' summary based on 'database'={d} and 'id'={id}. searching url={url}" . format(d=db, id=pid, url=query))
         try:
-            return pq(str(BS(urlopen(query).read(), "lxml")))
+            return pq(str(BS(urlopen(query, timeout=TIMEOUT).read(), "lxml")))
         except:
             return ""
 
     def get_summary(self, db, pid):
         content = self.search_summary(db, pid)
-        return {
-            "authors": self.get_authors(content),
-            "pub_date": self.get_pub_date(content),
-            "journal_name": self.get_journal_name(content),
-            "journal_full_name": self.get_journal_full_name(content),
-            "pmc_id": self.get_id_pmc(content),
-            "title": self.get_title(content),
-            "pubmed_id": self.get_id_pubmed(content),
-            "entry_created_date": str(datetime.datetime.utcnow())
-        }
+        try:
+            summary = {
+                "authors": self.get_authors(content),
+                "pub_date": self.get_pub_date(content),
+                "journal_name": self.get_journal_name(content),
+                "journal_full_name": self.get_journal_full_name(content),
+                "pmc_id": self.get_id_pmc(content),
+                "title": self.get_title(content),
+                "pubmed_id": self.get_id_pubmed(content),
+                "entry_created_date": str(datetime.datetime.utcnow())
+            }
+        except:
+            summary = ""
+        return summary
 
     def get_attr(self, content, attr):
         return content('[name="%s"]' % attr)

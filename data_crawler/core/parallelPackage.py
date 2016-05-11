@@ -30,10 +30,11 @@ class PMCIdThread(Thread):
             tmp = self.ps.get_summary(self.db, pid)
             time.sleep(random_sleep())
             self.queue.task_done()
-            try:
-                self.summary.insert_one(tmp)
-            except:
-                pass
+            if tmp is not None:
+                try:
+                    self.summary.insert_one(tmp)
+                except:
+                    pass
 
 
 def get_update_summary_threads(num_of_thread, summary, pubmed_ids, db):

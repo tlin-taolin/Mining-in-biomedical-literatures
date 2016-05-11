@@ -188,6 +188,6 @@ def main(model_path, phenotype_path, distances_pairs_path):
 
 if __name__ == '__main__':
     model_path = "model/"
-    phenotype_path = "../phenotype_graph/data/parsed_hp"
+    phenotype_path = "data/graph/parsed_hp"
     distances_pairs_path = "data/word2vec_in_phenotypes/pairwise_distances"
     main(model_path, phenotype_path, distances_pairs_path)

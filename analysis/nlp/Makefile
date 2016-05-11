@@ -16,6 +16,15 @@ analyze_pipeline:
 	python graph/calculate_word2vec_distance_of_phenotype.py
 	python graph/extract_relationship_phenotype.py
 
+
+parse_hp:
+	python graph/parse_hp.py
+graphs:
+	python graph/agraph.py
+	rm -rf figures/
+	mkdir -p figures/graph; mv *.1.* figures/graph/
+
+
 ######### Scala/Spark based #########
 extract_features_spark:
 	cd analysis && sbt package

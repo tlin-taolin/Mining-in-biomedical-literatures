@@ -14,6 +14,12 @@ RUN mkdir t && cd t && wget http://snap.stanford.edu/snappy/release/snap-1.2-2.4
 RUN apt-get update && apt-get install -y gnuplot
 
 # install Graphviz for drawing and visualizing small graphs.
+RUN apt-get install -y graphviz
+RUN pip install --no-cache-dir graphviz
+
+# install igraph
+RUN pip install --no-cache-dir python-igraph
+
 # RUN apt-get -y remove libpathplan4 libgraphviz4 libxdot4 libcgraph6 libcdt5
 # RUN apt-get -y install libatk1.0-0 libgtk2.0-0 libgts-0.7-5 liblasi0
 # RUN wget http://www.graphviz.org/pub/graphviz/stable/ubuntu/ub13.10/x86_64/libgraphviz4_2.38.0-1~saucy_amd64.deb && \

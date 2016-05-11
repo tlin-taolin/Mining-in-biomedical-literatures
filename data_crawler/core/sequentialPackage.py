@@ -10,6 +10,10 @@ from pubsummary import PubmedSummary
 from pubdoc import PubmedDoc
 
 
+def random_sleep():
+    return random.uniform(0, DOWNLOAD_DELAY)
+
+
 def get_pubmed_ids(option):
     return PubmedId(option).search_id_list(debug=MODE)
 
@@ -28,7 +32,7 @@ def get_update_summary(pubmed_ids, summary, db):
     for pid in pubmed_ids:
         tmp = ps.get_summary(db, pid)
         summary_docs.append(tmp)
-        time.sleep(DOWNLOAD_DELAY)
+        time.sleep(random_sleep())
     if summary_docs:
         summary.insert_many(summary_docs)
 
@@ -47,6 +51,6 @@ def get_pmc_doc(pmc_ids, pmcdoc):
         tmp = doc.search_pmc(pmc_id)
         if tmp is not None:
             pmc_docs.append(tmp)
-        time.sleep(DOWNLOAD_DELAY)
+        time.sleep(random_sleep())
     if pmc_docs:
         pmcdoc.insert_many(pmc_docs)
