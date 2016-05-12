@@ -10,3 +10,4 @@ class Node(object):
         self.defi = line[2]
         self.is_a = line[3]
         self.synonym = line[4]
+        self.alt_id = line[5]

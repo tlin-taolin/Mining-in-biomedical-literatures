@@ -6,6 +6,7 @@ import logging
 from snap import *
 import igraph
 
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', )
 
 
@@ -26,12 +27,20 @@ def extract_info_from_parsed_hp(path):
         elements = line.strip("\n").split("::")
         id = elements[0]
         name = elements[1]
-        isas = elements[-1].split(",")
-        output_id_str += id + "\t" + name + "\n"
+        alt_lids = elements[2]
+        isas = elements[-1]
         id_map_name[int(id)] = name
 
-        for isa in isas:
-            output_edge_str += id + "\t" + isa + "\n"
+        if len(isas) != 0:
+            isas = isas.split(",")
+            for isa in isas:
+                output_edge_str += isa + "\t" + id + "\n"
+                if len(alt_lids) != 0:
+                    alt_ids = alt_lids.split(",")
+                    for alt_id in alt_ids:
+                        output_edge_str += alt_id + "\t" + isa + "\n"
+
+        output_id_str += id + "\t" + name + "\n"
 
     with open(output_edge, "w") as o:
         o.write(output_edge_str.encode("utf-8"))
@@ -55,7 +64,10 @@ def extract_edges(path, id_map_vid):
     for line in lines:
         split_line = line.strip("\n").split("\t")
         if split_line[1] != "" and split_line[0] != "":
-            directions.append((mapping(split_line[0]), mapping(split_line[1])))
+            try:
+                directions.append((mapping(split_line[0]), mapping(split_line[1])))
+            except:
+                pass
     return directions
 
 
@@ -67,6 +79,7 @@ def map_id_to_vid(ids):
 def build_igraph(id_map_name, path):
     ids = list(id_map_name.keys())
     vids, id_map_vid = map_id_to_vid(ids)
+
     graph = igraph.Graph().as_directed()
     graph.add_vertices(vids)
     directed_edges = extract_edges(path + "hp_edge_list.txt", id_map_vid)

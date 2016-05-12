@@ -36,7 +36,7 @@ def _itersplit(l, splitters):
 
 
 def parsing(lines):
-    want_to_extract = ["id", "name", "def", "is_a", "synonym"]
+    want_to_extract = ["id", "name", "def", "is_a", "synonym", "alt_id"]
     parsed_lines = []
     for line in lines:
         extracted_line = extract(line)
@@ -54,6 +54,8 @@ def extract(line):
         if "is_a" == sl[0]:
             tmp = re.split("!", sl[2])
             extracted[sl[0]] = extracted.get(sl[0], []) + [tmp[0].strip(), ]
+        elif "alt_id" in sl[0]:
+            extracted[sl[0]] = extracted.get(sl[0], []) + [sl[2].strip(), ]
         elif "id" in sl[0]:
             extracted[sl[0]] = sl[2].strip()
         elif "synonym" in sl[0]:
@@ -84,12 +86,18 @@ def extract_names(nodes):
 
 
 def output_data(nodes, out_path):
+    """
+    id::name::alt_id::definition::synonym::is_a
+    """
     if os.path.exists(out_path):
         os.remove(out_path)
 
     with open(out_path, 'a') as wo:
         for node in nodes.values():
-            out_str = (node.id + "::" + node.name + "::" + node.defi + "::" + ",".join(node.synonym) + "::" + ",".join(map(lambda n: n.id, node.is_a)) + "\n")
+            out_str = (node.id + "::" + node.name + "::" +
+                       ",".join(node.alt_id) + "::" +
+                       node.defi + "::" + ",".join(node.synonym) + "::" +
+                       ",".join(map(lambda n: n.id, node.is_a)) + "\n")
             try:
                 wo.write(out_str.encode("utf-8"))
             except:
