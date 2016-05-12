@@ -30,7 +30,8 @@ def select_topk(pairwise, groupby_index=0, topk=10):
         tmp = []
         for element in group:
             tmp.append((element[1], float(element[4])))
-        topk_dict[key] = sorted(tmp, key=lambda x: x[1], reverse=False)[0:topk-1]
+        knn = sorted(tmp, key=lambda x: x[1], reverse=False)[0:topk-1]
+        topk_dict[key] = knn
         group_list.append([key, tmp])
     return topk_dict, group_list
 
@@ -39,7 +40,7 @@ def write_topK_to_file(topk_dict, out_path):
     logging.info("Write the selected topK to the file...")
     out_str = ""
     for key, value in topk_dict.items():
-        out_str += key + ":" + ";".join(map(lambda x: x[0] + "," + str(x[1]), value)) + "\n"
+        out_str += "\n".join(map(lambda x: key + "\t" + x[0] + "\t" + str(x[1]), value)) + "\n"
     with open(out_path, "w") as out:
         out.write(out_str)
 
@@ -114,4 +115,4 @@ if __name__ == '__main__':
     out_knn_path = "data/word2vec_in_phenotypes/phenotype_knn"
     out_matrix_path = "data/word2vec_in_phenotypes/phenotype_matrix.pickle"
     main_without_pandas(pairwise_distance_path, out_knn_path, out_matrix_path)
-    main_with_pandas(pairwise_distance_path, out_knn_path, out_matrix_path)
+    # main_with_pandas(pairwise_distance_path, out_knn_path, out_matrix_path)

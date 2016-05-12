@@ -23,8 +23,9 @@ graphs:
 	python graph/agraph.py
 	rm -rf figures/
 	mkdir -p figures/graph; mv *.1.* figures/graph/
-
-
+generate_random_graph:
+	python graph/generate_random_graph.py
+	
 ######### Scala/Spark based #########
 extract_features_spark:
 	cd analysis && sbt package

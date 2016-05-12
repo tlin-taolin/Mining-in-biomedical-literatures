@@ -43,11 +43,11 @@ def analyze_igraph_graph(graph, topk=10):
     sorted_edge = sorted(graph.get_edgelist(), key=lambda x: x[0])
     extract_edge = lambda x: x[1]
     grouped_edge = dict((k, map(extract_edge, list(e))) for k, e in groupby(sorted_edge, lambda x: x[0]))
-    if_cyclic = is_cyclic(grouped_edge)
+    if_cyclic = is_cyclic_directed(grouped_edge)
     logging.info("Check if the graph is cyclic: {r}".format(r=if_cyclic))
 
 
-def is_cyclic(g):
+def is_cyclic_directed(g):
     """Return True if the directed graph g has a cycle.
     g must be represented as a dictionary mapping vertices to
     iterables of neighbouring vertices. For example:
@@ -71,3 +71,28 @@ def is_cyclic(g):
         path.remove(vertex)
         return False
     return any(visit(v) for v in g)
+
+
+def convert_to_undirected(g):
+    ng = {}
+    for node, nodes in g.items():
+        tmp = ng.get(node, ())
+        ng[node] = tmp + nodes
+        for n in nodes:
+            tmp = ng.get(n, ())
+            ng[n] = tmp + (node, )
+    return dict([(key, tuple(set(value))) for key, value in ng.items()])
+
+
+def is_cyclic_undirected(g, isdirected=False):
+    """Return True if the undirected graph g has a cycle.
+    g must be represented as a dictionary mapping vertices to
+    iterables of neighbouring vertices
+
+    It currently has a typo that if a <-> b, it will be regarded as a cycle.
+    Indeed, it is not.
+    """
+    if is_cyclic_directed:
+        g = convert_to_undirected(g)
+    # directly use the alogrithm `is_cyclic_directed`
+    return is_cyclic_directed(g)
