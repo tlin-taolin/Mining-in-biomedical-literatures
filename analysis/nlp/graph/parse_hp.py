@@ -110,13 +110,17 @@ def output_name(names, out_path):
 
     with open(out_path, 'a') as wo:
         out = "\n".join(names)
-        wo.write(out.encode("utf-8"))
+        wo.write(out.encode("utf-8").lower())
 
+
+def filter_by_name_length(names):
+    return filter(lambda name: len(name.strip("\n").split(" ")) <= 4, names)
 
 if __name__ == '__main__':
     path = "data/graph/humanphenotype.obo"
     out_all_path = "data/graph/parsed_hp"
     out_name_path = "data/graph/parsed_name"
+    out_filtered_name_path = "data/graph/parsed_filtered_name"
     lines = read_data(path)
     cleaned_lines = clean_data(lines)
     parsed_lines = parsing(cleaned_lines)
@@ -124,3 +128,6 @@ if __name__ == '__main__':
     names = extract_names(nodes)
     output_data(nodes, out_all_path)
     output_name(names, out_name_path)
+
+    filtered_name = filter_by_name_length(names)
+    output_name(filtered_name, out_filtered_name_path)

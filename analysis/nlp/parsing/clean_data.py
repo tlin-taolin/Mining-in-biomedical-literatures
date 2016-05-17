@@ -42,6 +42,7 @@ def main(in_path):
     paths = utilities.list_files(in_path + "parsed/")
     utilities.mkdir(in_path, "parsed_all/abstract/")
     utilities.mkdir(in_path, "parsed_all/doc/")
+    utilities.delete_file(in_path + "parsed_all/all_in_one")
 
     logging.info('Start Cleaning...')
     for p in paths:
@@ -53,8 +54,9 @@ def main(in_path):
         formated = format_file(sdata)
         utilities.write_to_json(formated, p)
         # logging.info('Write document to following path...')
-        utilities.append_to_file(formated["abstract"], in_path + "parsed_all/abstract/")
-        utilities.append_to_file(formated["body"], in_path + "parsed_all/doc/")
+        utilities.append_to_smallfile(formated["abstract"], in_path + "parsed_all/abstract/")
+        utilities.append_to_smallfile(formated["body"], in_path + "parsed_all/doc/")
+        utilities.append_to_bigfile(p, formated["body"], in_path + "parsed_all/all_in_one")
 
 
 if __name__ == '__main__':

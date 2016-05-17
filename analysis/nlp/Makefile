@@ -19,13 +19,16 @@ analyze_pipeline:
 
 parse_hp:
 	python graph/parse_hp.py
+statistics_hp:
+	python graph/statistics_hp.py
+	mv *.pdf figures/graph
 graphs:
 	python graph/agraph.py
 	rm -rf figures/
 	mkdir -p figures/graph; mv *.1.* figures/graph/
 generate_random_graph:
 	python graph/generate_random_graph.py
-	
+
 ######### Scala/Spark based #########
 extract_features_spark:
 	cd analysis && sbt package

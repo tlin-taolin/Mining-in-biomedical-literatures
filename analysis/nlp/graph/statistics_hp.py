@@ -2,59 +2,49 @@
 #
 # Do the statistics for the parsed results.
 
+import numpy as np
 from parse_hp import *
-import nltk
-import re
-
-nltk.data.path.append("/nltk")
+import matplotlib.pyplot as plt
 
 
-def split_names(names):
-    return [re.split("\s", name) for name in names]
+def split_name(names):
+    return [name.strip("\n").split(" ") for name in names]
 
 
-def stat_names(names):
-    splitted_name = split_names(names)
-    num_of_names = len(splitted_name)
-    len_of_names = [len(name) for name in splitted_name]
-    min_len_of_names = min(len_of_names)
-    max_len_of_names = max(len_of_names)
-    average_len_of_names = 1.0 * sum(len_of_names) / num_of_names
-    return min_len_of_names, max_len_of_names, average_len_of_names
+def get_len_name(splitted_name):
+    return map(len, splitted_name)
 
 
-def build_name_tokens(names):
-    stopwords = nltk.corpus.stopwords.words('english')
-
-    tokens = []
-    for words in names:
-        tokens += [word.lower().strip() for word in nltk.word_tokenize(words) if word.lower() not in stopwords]
-    return sorted(set(tokens))
+def min_len(len_of_name):
+    return min(len_of_name)
 
 
-def get_nouns(name_tokens):
-    tagged_token = nltk.pos_tag(name_tokens)
-    return [word for word, tag in tagged_token if tag == "NN"]
+def max_len(len_of_name):
+    return max(len_of_name)
 
 
-def output_name_tokens(file_name, tokens):
-    with open("../data/" + file_name, "a") as w:
-        tmp = "\n".join(tokens)
-        out = re.sub(r"\d+", "", tmp)
-        if out is not "":
-            w.write(tmp)
+def median_len(len_of_name):
+    return np.median(len_of_name)
+
+
+def plot_hist_len(len_of_name):
+    plt.hist(len_of_name)
+    plt.title("Histogram of the name length")
+    plt.xlabel("Length of name")
+    plt.ylabel("Frequency")
+    plt.savefig('hist_of_len_name.pdf')
+
+
+def main(inpath):
+    names = read_data(inpath)
+    splitted_name = split_name(names)
+    len_name = get_len_name(splitted_name)
+    plot_hist_len(len_name)
+    print "The minimal of name length: {r}" .format(r=min_len(len_name))
+    print "The maximal of name length: {r}" .format(r=max_len(len_name))
+    print "The median of name length: {r} " .format(r=median_len(len_name))
 
 
 if __name__ == '__main__':
-    path = "data/graph/humanphenotype.obo"
-    out_path = "data/graph/parsed_hp"
-    lines = read_data(path)
-    cleaned_lines = clean_data(lines)
-    parsed_lines = parsing(cleaned_lines)
-    nodes = build_nodes(parsed_lines)
-    names = extract_names(nodes)
-    name_tokens = build_name_tokens(names)
-    # output_name_tokens("1gram_name_tokens", name_tokens)
-    # output_name_tokens("ngram_name_tokens", names)
-    noun_tokens = get_nouns(name_tokens)
-    output_name_tokens("1gram_noun_tokens", noun_tokens)
+    in_name_path = "data/graph/parsed_name"
+    main(in_name_path)

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 # Define a list of tool functions.
+import re
 import json
-from os import listdir, remove, path, makedirs
 import shutil
+from os import listdir, remove, path, makedirs
 
 
 def is_file_exist(file_path, debug=False):
@@ -59,7 +60,7 @@ def write_to_json(data, out_path):
         json.dump(data, f)
 
 
-def append_to_file(data, o):
+def append_to_smallfile(data, o):
     files = list_files(o)
     len_of_o = len(files)
     if get_file_size(o + str(len_of_o - 1)) / 1024.0 < 30:
@@ -67,5 +68,12 @@ def append_to_file(data, o):
     else:
         out_path = o + str(len_of_o)
     with open(out_path, "a") as f:
-        out = ("\n".join(data) + "\n\n").encode('utf-8')
+        out = ("\n".join(data) + "\n\n").encode('utf-8').lower()
+        f.write(out)
+
+
+def append_to_bigfile(path, data, o):
+    doc_id = re.sub("\D+", "", path)
+    with open(o, "a") as f:
+        out = (doc_id + "::" + "...".join(data) + "\n").encode('utf-8').lower()
         f.write(out)
