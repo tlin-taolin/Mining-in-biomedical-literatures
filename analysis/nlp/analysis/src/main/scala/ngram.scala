@@ -13,24 +13,49 @@ object NgramMain {
 
 	def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("Ngram")
-    val sc = new SparkContext(conf)
-    val docPath: String = "../data/test"
-    val phenotypePath: String = "../data/graph/parsed_name"
-    val numPartition: Int = 8
+                              .set("spark.broadcast.factory", "org.apache.spark.broadcast.TorrentBroadcastFactory")
+                              .set("spark.io.compression.codec", "snappy")
+                              .set("spark.broadcast.compress", "true")
+                              .set("spark.akka.frameSize", "1024")
+                              .set("spark.driver.maxResultSize", "16g")
+                              .set("spark.shuffle.compress", "true")
+                              .set("spark.rdd.compress", "true")
+                              .set("spark.executor.cores", "4")
 
-    val phenoRDD: RDD[(String, Int)] = sc.textFile(phenotypePath).map(line => splitPheno(line))
+    val sc = new SparkContext(conf)
+    val docPath: String = "data/all_in_one"
+    val phenotypePath: String = "data/parsed_name"
+    val numPartition: Int = 20
+    val ifTakeSample: Boolean = true
+    val sampleSize: Int = 100
+
+    val phenoRDD: RDD[(String, Int)] = sc.textFile(phenotypePath, numPartition).mapPartitions({
+      iter: Iterator[String] => for (line <- iter) yield splitPheno(line)
+    })
     val phenotypeBC: Broadcast[Array[(String, Int)]] = sc.broadcast(phenoRDD.collect())
 
     val originDocRDD: RDD[String] = sc.textFile(docPath, numPartition)
-    val ngramsDocRDD: RDD[(String, List[(String, Int)])] = originDocRDD.map(line => splitNgram(line, takeNgrams, 4)).cache()
+    val docRDD: RDD[String] =
+      if (!ifTakeSample) originDocRDD
+      else sc.parallelize( originDocRDD.take(sampleSize), numPartition )
+
+    val ngramsDocRDD: RDD[(String, List[(String, Int)])] = docRDD.mapPartitions({
+      iter: Iterator[String] => for (line <- iter) yield splitNgram(line, takeNgrams, 4)
+    }).cache()
     val numOfDoc: Long = ngramsDocRDD.count()
 
     val matchingTFCount: RDD[(String, (String, Int))] = ngramsDocRDD.flatMap(ngrams => phenotypeMatching(ngrams, phenotypeBC))
     val matchingPairs: RDD[(String, ListBuffer[(String, Int)])] = groupById(matchingTFCount)
     val matchingPairwise: RDD[((String, String), (Int, Int), String)] = matchingPairs.mapPartitions(buildPhenotypePairs)
-    val matchingPairwiseScore: RDD[((String, String), Float, String)] = matchingPairwise.map(evaluatePhenptypesScore)
+    val matchingPairwiseScore: RDD[((String, String), Double, String)] = matchingPairwise.map(evaluatePhenptypesScore).cache()
+
     val matchingPairwiseTmp: RDD[((String, String), Int)] = groupByPair(matchingPairwiseScore)
-    val matchingCIDF: RDD[((String, String), Double)] = matchingPairwiseTmp.map(c => (c._1, math.log((numOfDoc / c._2).toDouble)))
+    val cidf: RDD[((String, String), Double)] = matchingPairwiseTmp.map(c => (c._1, math.log((numOfDoc / c._2).toDouble)))
+
+    val atf: RDD[((String, String), Double)] = calculateATF(matchingPairwiseScore)
+    val statScore: RDD[((String, String), Double)] = calculateScore(cidf, atf, numOfDoc)
+
+    statScore.saveAsTextFile("stat-score")
 
     sc.stop()
 	}

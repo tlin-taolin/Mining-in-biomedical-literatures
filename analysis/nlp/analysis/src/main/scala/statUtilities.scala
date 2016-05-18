@@ -1,7 +1,7 @@
 import math._
-import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import scala.collection.mutable._
+import org.apache.spark.broadcast.Broadcast
 
 object StatUtilities {
 
@@ -64,19 +64,27 @@ object StatUtilities {
     ) yield ((pair1._1, pair2._1), (pair1._2, pair2._2), docId)
   }
 
-  def evaluatePhenptypesScore(inTuple: ((String, String), (Int, Int), String)): ((String, String), Float, String) = {
-    val score: Float = 1.0f - 2.0f * min(inTuple._2._1, inTuple._2._2) / (inTuple._2._1 + inTuple._2._2)
+  def evaluatePhenptypesScore(inTuple: ((String, String), (Int, Int), String)): ((String, String), Double, String) = {
+    val score: Double = 1.0 - 2.0 * min(inTuple._2._1, inTuple._2._2) / (inTuple._2._1 + inTuple._2._2)
     (inTuple._1, score, inTuple._3)
   }
 
-  def groupByPair(rdd: RDD[((String, String), Float, String)]): RDD[((String, String), Int)] = {
-    val addToCounts = (s: Int, v: Float) => s + 1
+  def groupByPair(rdd: RDD[((String, String), Double, String)]): RDD[((String, String), Int)] = {
+    val addToCounts = (s: Int, v: Double) => s + 1
     val sumPartition = (s1: Int, s2: Int) => s1 + s2
     rdd.map(x => (x._1, x._2)).aggregateByKey(0)(addToCounts, sumPartition)
   }
 
-  def calCIDF() = {
-    
+  def calculateATF(rdd: RDD[((String, String), Double, String)]): RDD[((String, String), Double)] = {
+    val addToSum = (s: Double, v: Double) => s + v
+    val sumPartition = (s1: Double, s2: Double) => s1 + s2
+    rdd.map(x => (x._1, x._2)).aggregateByKey(0.0)(addToSum, sumPartition)
   }
+
+  def calculateScore(rddCIDF: RDD[((String, String), Double)], rddATF: RDD[((String, String), Double)], numOfDoc: Long): RDD[((String, String), Double)] = {
+    rddCIDF.cogroup(rddATF).map{ x => ( x._1, x._2._1.reduce(_ * _) * x._2._2.reduce(_ * _) / numOfDoc)}
+  }
+
+
 
 }

@@ -1,3 +1,5 @@
+import org.apache.spark.rdd.RDD
+
 
 object NgramUtilities {
   def splitLines(lines: String): (String, List[String]) = {
@@ -30,4 +32,5 @@ object NgramUtilities {
   def splitPheno(lines: String): (String, Int) = {
     (lines, lines.split(" ").length)
   }
+
 }
