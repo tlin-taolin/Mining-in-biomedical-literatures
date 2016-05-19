@@ -19,17 +19,21 @@ cp_jar_cloud:
 	gcloud compute copy-files target/scala-2.10/nlp-analysis_2.10-1.0.jar ${HOST}:ngram/
 	gcloud compute copy-files Makefile ${HOST}:ngram/
 
+cp_data_hdfs:
+	hadoop fs -put data
+
 run-cloud:
-	hadoop fs -rm -r -f ngramDoc
-	hadoop fs -rm -r -f stat-score
+	hadoop fs -rm -r -f statScore
 	spark-submit \
 		--class NgramMain \
-		--num-executors 20 \
-		--executor-cores 3 \
+		--master yarn \
+		--deploy-mode client\
+		--num-executors 40 \
+		--executor-cores 2 \
 		--driver-memory 8g \
-		--executor-memory 8g \
-		nlp-analysis_2.10-1.0.jar
-
+		--executor-memory 12g \
+		nlp-analysis_2.10-1.0.jar \
+		100
 
 run-local:
 	sbt package
