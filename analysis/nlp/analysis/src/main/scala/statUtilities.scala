@@ -29,7 +29,7 @@ object StatUtilities {
 
   def findTFInDoc(pheno: (String, Int), ngram: (String, Int), threshold: Int): Int = {
     if (pheno._2 == ngram._2) {
-      val dist = stringDistance1(pheno._1, ngram._1)
+      val dist = stringDistance2(pheno._1, ngram._1)
       if (dist <= threshold) 1
       else 0
     }

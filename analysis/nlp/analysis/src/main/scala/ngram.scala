@@ -27,11 +27,11 @@ object NgramMain {
     val phenotypePath: String = "data/parsed_name"
     val numPartition: Int = 20
     val ifTakeSample: Boolean = true
-    val sampleSize: Int = 100
+    val sampleSize: Int = 1
 
     val phenoRDD: RDD[(String, Int)] = sc.textFile(phenotypePath, numPartition).mapPartitions({
       iter: Iterator[String] => for (line <- iter) yield splitPheno(line)
-    })
+    }).filter(x => x._2 <= 4)
     val phenotypeBC: Broadcast[Array[(String, Int)]] = sc.broadcast(phenoRDD.collect())
 
     val originDocRDD: RDD[String] = sc.textFile(docPath, numPartition)
@@ -40,7 +40,7 @@ object NgramMain {
       else sc.parallelize( originDocRDD.take(sampleSize), numPartition )
 
     val ngramsDocRDD: RDD[(String, List[(String, Int)])] = docRDD.mapPartitions({
-      iter: Iterator[String] => for (line <- iter) yield splitNgram(line, takeNgrams, 4)
+      iter: Iterator[String] => for (line <- iter) yield splitNgram(line, takeNgram, 1)
     }).cache()
     val numOfDoc: Long = ngramsDocRDD.count()
 
@@ -48,14 +48,11 @@ object NgramMain {
     val matchingPairs: RDD[(String, ListBuffer[(String, Int)])] = groupById(matchingTFCount)
     val matchingPairwise: RDD[((String, String), (Int, Int), String)] = matchingPairs.mapPartitions(buildPhenotypePairs)
     val matchingPairwiseScore: RDD[((String, String), Double, String)] = matchingPairwise.map(evaluatePhenptypesScore).cache()
-
     val matchingPairwiseTmp: RDD[((String, String), Int)] = groupByPair(matchingPairwiseScore)
-    val cidf: RDD[((String, String), Double)] = matchingPairwiseTmp.map(c => (c._1, math.log((numOfDoc / c._2).toDouble)))
 
+    val cidf: RDD[((String, String), Double)] = matchingPairwiseTmp.map(c => (c._1, math.log((numOfDoc / c._2).toDouble)))
     val atf: RDD[((String, String), Double)] = calculateATF(matchingPairwiseScore)
     val statScore: RDD[((String, String), Double)] = calculateScore(cidf, atf, numOfDoc)
-
-    statScore.saveAsTextFile("stat-score")
 
     sc.stop()
 	}
