@@ -1,3 +1,6 @@
 doc
 *.pyc
 */data/*
+*/project/*
+*/target/*
+*db.mv.db

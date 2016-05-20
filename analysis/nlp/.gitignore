@@ -1,8 +1,0 @@
-data/*
-model/*
-*analysis/project*
-*analysis/target*
-.ipynb_checkpoints*
-*.ipynb*
-.ensime_cache/
-figures/*
