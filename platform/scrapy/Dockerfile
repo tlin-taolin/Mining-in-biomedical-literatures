@@ -6,8 +6,7 @@ MAINTAINER Tao Lin <itamtao@gmail.com>
 RUN pip install scrapy
 
 RUN pip install --no-cache-dir pyquery \
-     						beautifulsoup4 \
-    						joblib
+     						beautifulsoup4
 
 # switch user
 USER tlin

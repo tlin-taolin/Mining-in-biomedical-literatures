@@ -14,6 +14,7 @@ sys.path.insert(0, 'util/')
 import readwrite
 import opfiles
 
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',)
 nltk.data.path.append("/nltk")
 

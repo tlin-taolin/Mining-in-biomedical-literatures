@@ -20,8 +20,8 @@ extract_word2vec_distance:
 	python tasks/extract_word2vec_distance.py
 
 ############ Debug (ALL) ############
-generate_random_graph:
-	python graph/generate_random_graph.py
+calculate_graphs_similarity:
+	python graph/pmcdoc_word2vec/cal_sim_graph.py
 
 extract_doc_feature:
 	python graph/pmcdoc_word2vec/extract_doc_feature.py

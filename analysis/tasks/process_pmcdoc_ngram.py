@@ -11,14 +11,15 @@ sys.path.insert(0, 'util/')
 sys.path.insert(0, 'graph/pmcdoc_ngram/')
 
 import clean_rawdata
-import analyze_graph
+import its_analysis
 
 
 def pipeline():
+    level = ["ngram-doc-level/", "ngram-doc-sent-level/"][0]
     logging.info("Clean raw dataset, and merge them to a single file...")
-    clean_rawdata._clean()
+    clean_rawdata.cleaning(level)
     logging.info("Analyze the result by graph...")
-    analyze_graph._analysis()
+    its_analysis.analysis(level)
 
 
 if __name__ == '__main__':

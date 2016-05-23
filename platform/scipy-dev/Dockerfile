@@ -26,3 +26,6 @@ RUN pip install --no-cache-dir joblib
 
 # install pandas
 RUN pip install --no-cache-dir pandas
+
+# install cython
+RUN pip install --no-cache-dir cython

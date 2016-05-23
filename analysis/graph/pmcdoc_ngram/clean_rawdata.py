@@ -10,6 +10,7 @@ sys.path.insert(0, 'util/')
 import opfiles
 import readwrite
 
+
 def get_all_files(root_path):
     sub_path = root_path + "origin/ngram-result/"
     ngrams = list("1")
@@ -36,11 +37,11 @@ def parse_lines(root_path, out_path):
             readwrite.write_to_txt(out_string, out_path, type="a")
 
 
-def _clean():
-    root_path = "/media/tlin/Data/dataset/experiment_result/"
+def cleaning(level):
+    root_path = "/media/tlin/Data/dataset/experiment_result/" + level
     out_path = root_path + "processed/ngram"
     parse_lines(root_path, out_path)
 
 
 if __name__ == '__main__':
-    _clean()
+    cleaning()
