@@ -1,12 +1,12 @@
 import org.apache.spark.rdd.RDD
 
 object NgramUtilities {
-  def splitLines(lines: String): (String, List[(String, Int)]) = {
+  def splitLines(lines: String): (Int, List[(String, Int)]) = {
     val splitedLine: Array[String] = lines.split("::")
     if (splitedLine.length == 2)
-      (splitedLine(0), splitedLine(1).split("""\.\.\.""").toList.zipWithIndex)
+      (splitedLine(0).toInt, splitedLine(1).split("""\.\.\.""").toList.zipWithIndex)
     else
-      (splitedLine(0), List())
+      (splitedLine(0).toInt, List())
   }
 
   def updateLastElement(l: List[String]): List[String] = {
@@ -32,11 +32,11 @@ object NgramUtilities {
     (1 until (n + 1)).flatMap(ind => takeNgram(sent, ind)).toList
   }
 
-  def splitNgram(lines: String, takeN: ((String, Int), Int) => List[(String, Int)], n: Int): (String, List[(String, Int)]) = {
+  def splitNgram(lines: String, takeN: ((String, Int), Int) => List[(String, Int)], n: Int): (Int, List[(String, Int)]) = {
     /** Split the input sentence to the following format.
       * (docId, List[(ngram, sentId)])
       */
-    val (docId, alines): (String, List[(String, Int)]) = splitLines(lines)
+    val (docId, alines): (Int, List[(String, Int)]) = splitLines(lines)
     val ngrams: List[(String, Int)] = alines.flatMap(sentence => takeN(sentence, n))
     (docId, ngrams)
   }
@@ -45,7 +45,7 @@ object NgramUtilities {
     (lines, lines.split(" ").length)
   }
 
-  def revertNgram(iterator: Iterator[(String, List[(String, Int)])]): Iterator[(String, (String, Int))] = {
+  def revertNgram(iterator: Iterator[(Int, List[(String, Int)])]): Iterator[(String, (Int, Int))] = {
       for ((docId, ngrams) <- iterator; (ngram, sentId) <- ngrams)
         yield (ngram, (docId, sentId))
   }

@@ -22,5 +22,5 @@ def main(path):
 
 
 if __name__ == '__main__':
-    data_path = "data/graph/"
+    data_path = "data/hp/"
     main(data_path)

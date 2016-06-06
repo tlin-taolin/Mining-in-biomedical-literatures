@@ -8,9 +8,12 @@ import numpy as np
 import scipy.sparse as sp
 import pandas as pd
 from itertools import groupby
+from random import randint
 
 sys.path.insert(0, 'util/')
 import readwrite
+import groupby
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', )
 
@@ -22,16 +25,27 @@ def read_from_file(path):
     return map(lambda x: x.strip("\n").split("\t"), files)
 
 
-def select_topk(pairwise, groupby_index=0, topk=10):
-    logging.info("Select topk from pairwise based on its phenotype.")
-    sorted_pairwise = sorted(pairwise, key=lambda x: x[groupby_index])
+def random_setk(topk, is_random):
+    if not is_random:
+        return topk
+    else:
+        try:
+            r = randint(1, topk)
+        except:
+            r = 1
+        return r
+
+
+def select_topk(pairwise, topk, is_random=False):
+    logging.info("Select top{v} from pairwise based on its phenotype." .format(v=topk))
     topk_dict = {}
     group_list = []
-    for key, group in groupby(sorted_pairwise, lambda x: x[groupby_index]):
+    grouped_pairwise = groupby.group_by(pairwise, 0)
+    for key, group in grouped_pairwise:
         tmp = []
         for element in group:
             tmp.append((element[1], float(element[4])))
-        knn = sorted(tmp, key=lambda x: x[1], reverse=False)[0:topk-1]
+        knn = sorted(tmp, key=lambda x: x[1], reverse=False)[0: random_setk(topk, is_random)]
         topk_dict[key] = knn
         group_list.append([key, tmp])
     return topk_dict, group_list
@@ -66,9 +80,9 @@ def save_matrix_to_file(matrix, path):
         pickle.dump(matrix, handle)
 
 
-def main_without_pandas(in_data_path, out_knn_path, out_matrix_path):
+def main_without_pandas(in_data_path, out_knn_path, out_matrix_path, topk):
     pairwise_distance = read_from_file(in_data_path)
-    topk_dict, group_list = select_topk(pairwise_distance)
+    topk_dict, group_list = select_topk(pairwise_distance, topk)
     write_topK_to_file(topk_dict, out_knn_path)
     matrix = build_matrix(group_list)
     save_matrix_to_file(matrix, out_matrix_path)

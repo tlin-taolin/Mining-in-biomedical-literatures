@@ -11,10 +11,9 @@ import opfiles
 import readwrite
 
 
-def get_all_files(root_path):
-    sub_path = root_path + "origin/ngram-result/"
-    ngrams = list("1")
-    folders = [sub_path + "statScore-{s}/".format(s=ng) for ng in ngrams]
+def get_all_files(root_path, ngrams):
+    sub_path = root_path + "origin/"
+    folders = [sub_path + "statScore{s}/".format(s=ng) for ng in ngrams]
     files = [opfiles.list_files(p) for p in folders]
     return files
 
@@ -23,11 +22,11 @@ def parse_line(line, regex):
     return re.findall(regex, line)[0]
 
 
-def parse_lines(root_path, out_path):
+def parse_lines(root_path, out_path, ngrams):
     opfiles.is_file_exist(out_path, debug=True)
     pattern = r"\(\((.*?),(.*?)\),(.*?)\)"
     regex = re.compile(pattern, re.S)
-    files_paths = get_all_files(root_path)
+    files_paths = get_all_files(root_path, ngrams)
 
     for files in files_paths:
         for file in files:
@@ -40,7 +39,8 @@ def parse_lines(root_path, out_path):
 def cleaning(level):
     root_path = "/media/tlin/Data/dataset/experiment_result/" + level
     out_path = root_path + "processed/ngram"
-    parse_lines(root_path, out_path)
+    ngrams = list("4")
+    parse_lines(root_path, out_path, ngrams)
 
 
 if __name__ == '__main__':

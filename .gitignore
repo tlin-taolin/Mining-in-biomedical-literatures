@@ -1,6 +1,7 @@
 doc
 *.pyc
 */data/*
-*/project/*
-*/target/*
+*/project*
+*/target*
 *db.mv.db
+*.ensime_cache*

@@ -10,7 +10,10 @@ import clean_data
 import statistics
 
 
-if __name__ == '__main__':
+def main(path):
     clean_data.parsing_and_clean()
-    in_name_path = "data/graph/parsed_name"
-    statistics.stat(in_name_path)
+    statistics.stat(path)
+
+if __name__ == '__main__':
+    in_name_path = "data/hp/parsed_name"
+    main(in_name_path)

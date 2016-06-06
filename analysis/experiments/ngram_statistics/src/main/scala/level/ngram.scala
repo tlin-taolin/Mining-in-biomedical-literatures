@@ -5,57 +5,74 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import scala.collection.mutable._
+import org.apache.spark.RangePartitioner
+import org.apache.spark.HashPartitioner
 
 
 import NgramUtilities._
 import StatUtilities._
 
-object NgramWithLevel {
+object NgramLevel {
 
   def setPara(): Map[String, Any] = {
     Map("ngramLists" -> List(4),
         "numPartition" -> 300,
         "ifTakeSample" -> false,
-        "sampelSize" -> 100,
+        "sampelSize" -> 10,
         "level" -> List("documents", "sentences")
        )
   }
 
 
-  def processing(docRdd: RDD[String], phenoRdd: RDD[String], ngram: Int, level: String): RDD[((String, String), Double)] = {
+  def processing( docRdd: RDD[String], phenoRdd: RDD[String],
+                  ngram: Int, level: String, numPartition: Int): Unit = {
     /** set parameters */
-    val phenoLabel: String = "phenotype"
+    val phenoLabel: Int = -1
 
     /** split ngram based on given ngram list */
-    val ngramsDocRdd: RDD[(String, List[(String, Int)])] =
-      docRdd.map(line => splitNgram(line, takeNgrams, ngram)).cache()
+
+    val ngrams: RDD[(Int, List[(String, Int)])] =
+      docRdd.mapPartitions({
+        iter: Iterator[String] => for (line <- iter) yield splitNgram(line, takeNgrams, ngram)
+      }).cache()
+
+    // val ngramsDocRdd = ngrams.partitionBy(new RangePartitioner(numPartition, ngrams)).cache()
+    val ngramsDocRdd = ngrams.cache()//.partitionBy(new RangePartitioner(numPartition, ngrams)).cache()
+
 
     val numOfDoc: Long = ngramsDocRdd.count()
 
     /** get valid ngram information (join phenotype dictionary with doc ngrams) */
-    val reverseNgramRdd: RDD[(String, (String, Int))] = ngramsDocRdd.mapPartitions(revertNgram)
+    val reverseNgramRdd: RDD[(String, (Int, Int))] = ngramsDocRdd.mapPartitions(revertNgram)
 
-    val reversePhenoRdd: RDD[(String, (String, Int))] = phenoRdd.map(x => (x, (phenoLabel, 0)))
+    val reversePhenoRdd: RDD[(String, (Int, Int))] = phenoRdd.map(x => (x, (phenoLabel, 0)))
 
-    val reverseRdd: RDD[(String, (String, Int))] = reverseNgramRdd.union(reversePhenoRdd).cache()
+    val reverseRdd: RDD[(String, (Int, Int))] = reverseNgramRdd.union(reversePhenoRdd).cache()
 
-    val groupedRdd: RDD[(String, ListBuffer[(String, Int)])] = groupByName(reverseRdd).cache()
+    val groupedRdd: RDD[(String, ListBuffer[(Int, Int)])] = groupByName(reverseRdd).cache()
 
-    val matchingRdd: RDD[(String, ListBuffer[(String, Int)])] = filterUseless(groupedRdd, phenoLabel).cache()
+    val matchingRdd: RDD[(String, ListBuffer[(Int, Int)])] = filterUseless(groupedRdd, phenoLabel).cache()
 
     /** calculation for ngram statistics, i.e., tf, atf. cidf */
-    val idTFCountRdd: RDD[(String, (String, Int))] =
+    val idTFCountRdd: RDD[(Int, (String, Int))] =
       if (level == "sentences") matchingRdd.mapPartitions(x => flatSentLevel(x, phenoLabel)).cache()
       else matchingRdd.mapPartitions(x => flatDocLevel(x, phenoLabel)).cache()
 
-    val groupedIdTFCountRdd: RDD[(String, ListBuffer[(String, Int)])] = groupById(idTFCountRdd).cache()
-    val pairwiseWithGroupedId: RDD[((String, String), (Int, Int), String)] = groupedIdTFCountRdd.flatMap(x => buildPairs(x._1, x._2)).cache()
-    val pairwiseScoreWithGroupedId: RDD[((String, String), Double, String)] = pairwiseWithGroupedId.mapPartitions(evaluatePhenptypesScore).cache()
-    val matchingPairwiseTmp: RDD[((String, String), Int)] = groupByPair(pairwiseScoreWithGroupedId).cache()
-    val cidf: RDD[((String, String), Double)] = matchingPairwiseTmp.map(c => (c._1, math.log((1.0 * numOfDoc / c._2).toDouble)))
+    val groupedIdTFCountRdd: RDD[(Int, ListBuffer[(String, Int)])] = groupById(idTFCountRdd).cache()
+    val pairwiseWithGroupedId: RDD[((String, String), (Int, Int), Int)] = groupedIdTFCountRdd.flatMap(x => buildPairs(x._1, x._2)).cache()
+
+    pairwiseWithGroupedId.saveAsTextFile("result/pairwiseWithGroupedId")
+
+    val pairwiseScoreWithGroupedId: RDD[((String, String), Double, Int)] = pairwiseWithGroupedId.mapPartitions(x => evaluatePhenptypesScore(x, 5.0)).cache()
+    val pairwiseStat: RDD[((String, String), (Double, Int))] = groupByPair(pairwiseScoreWithGroupedId).cache()
+
+    pairwiseStat.map(x => (x._1, x._2._1)).saveAsTextFile("result/pairwiseTotalScore")
+    pairwiseStat.map(x => (x._1, x._2._1 / x._2._2)).saveAsTextFile("result/pairwiseAverageScore")
+
+    val cidf: RDD[((String, String), Double)] = pairwiseStat.map(c => (c._1, math.log((1.0 * numOfDoc / c._2._2).toDouble)))
     val atf: RDD[((String, String), Double)] = calculateATF(pairwiseScoreWithGroupedId)
     val statScore: RDD[((String, String), Double)] = calculateScore(cidf, atf, numOfDoc)
-    statScore
+    statScore.saveAsTextFile("result/statScore" + ngram)
   }
 
   def main(args: Array[String]): Unit = {
@@ -78,7 +95,7 @@ object NgramWithLevel {
   val numPartition: Int = parameters("numPartition").asInstanceOf[Int]
   val ifTakeSample: Boolean = parameters("ifTakeSample").asInstanceOf[Boolean]
   val sampleSize: Int = parameters("sampelSize").asInstanceOf[Int]
-  val level: String = parameters("sampelSize").asInstanceOf[List[String]](0)
+  val level: String = parameters("level").asInstanceOf[List[String]](1)
 
   /** read data to RDD. */
   val originDocRdd: RDD[String] = sc.textFile(docPath, numPartition)
@@ -94,8 +111,8 @@ object NgramWithLevel {
 
   /** processing the data and save to file. */
   for (ngrams <- ngramss;
-    statScore = processing(originDocRdd, phenoRdd, ngrams, level)
-  ) yield statScore.saveAsTextFile("statScore-" + ngrams)
+    statScore = processing(originDocRdd, phenoRdd, ngrams, level, numPartition)
+  )
 
   sc.stop()
   }

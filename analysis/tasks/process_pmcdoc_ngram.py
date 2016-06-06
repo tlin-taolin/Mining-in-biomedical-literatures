@@ -15,8 +15,9 @@ import its_analysis
 
 
 def pipeline():
-    level = ["ngram-doc-level/", "ngram-doc-sent-level/"][0]
-    logging.info("Clean raw dataset, and merge them to a single file...")
+    level = ["ngram-doc-level/", "ngram-sent-level/"][1]
+    logging.info("Clean raw dataset of {}, and merge them to a single file...".
+                 format(level))
     clean_rawdata.cleaning(level)
     logging.info("Analyze the result by graph...")
     its_analysis.analysis(level)

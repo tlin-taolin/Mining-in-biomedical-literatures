@@ -51,11 +51,11 @@ def parse_phenotype(path):
     words_list = []
 
     for line in lines:
-        elements = line.strip("\n").split("::")
+        elements = line.lower().strip("\n").split("::")
         id = elements[0]
         phase = elements[1]
         words = phase.split(" ")
-        isa = elements[4].split(",")
+        isa = elements[5].split(",")
         id_map_isa[id] = isa
         id_map_phase[id] = phase
         words_list.append(words)
@@ -137,13 +137,13 @@ def extract_potential_index(id_map_isa, id_map_phase, phase_map_id):
     return id_pairs
 
 
-def generate_pairs(phase_map_id, id_map_phase):
+def extract_pairs(id_map_phase, phase_map_id):
     logging.info("Generate complete pairs ...")
     ids = phase_map_id.values()
     pairs = []
     for ind1, id1 in enumerate(ids):
         for ind2, id2 in enumerate(ids):
-            if ind1 <= ind2:
+            if ind1 < ind2:
                 pairs.append((id1, id2, id_map_phase[id1], id_map_phase[id2]))
     return pairs
 
@@ -180,7 +180,7 @@ def calculate_word2vec_distences(model_path, phenotype_path, distances_pairs_pat
     id_map_isa, id_map_phase, phase_map_id, words_list = parse_phenotype(phenotype_path)
     words_dict = map_word2vec_to_dict(word_model, words_list)
     phases_dict = map_phases_to_vec(words_dict, words_list)
-    # id_pairs = generate_pairs(phase_map_id, id_map_phase)
+    # id_pairs = extract_pairs(id_map_phase, phase_map_id)
     id_pairs = extract_potential_index(id_map_isa, id_map_phase, phase_map_id)
     distances = cal_pairwise_distance_by_thread(phases_dict, id_pairs, 5)
     write_pairwise_distance_to_file(distances, distances_pairs_path)
@@ -188,6 +188,6 @@ def calculate_word2vec_distences(model_path, phenotype_path, distances_pairs_pat
 
 if __name__ == '__main__':
     model_path = "data/model/"
-    phenotype_path = "data/graph/parsed_hp"
+    phenotype_path = "data/hp/parsed_hp"
     distances_pairs_path = "data/word2vec_in_phenotypes/pairwise_distances"
     calculate_word2vec_distences(model_path, phenotype_path, distances_pairs_path)
