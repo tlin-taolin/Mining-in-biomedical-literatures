@@ -49,6 +49,4 @@ object StatUtilitiesNoLevel {
     rddCIDF.cogroup(rddATF).map{ x => ( x._1, x._2._1.reduce(_ * _) * x._2._2.reduce(_ * _) / numOfDoc)}
   }
 
-
-
 }

@@ -16,6 +16,7 @@ def read_json_and_parsing(in_path):
 
     logging.info('Start Parsing...')
     with open(to_be_parse, "rb") as f:
+        logging.info('Build/rebuild parsing folder...')
         opfiles.mkdir(in_path + "parsed/")
 
         json_data = f.readlines()

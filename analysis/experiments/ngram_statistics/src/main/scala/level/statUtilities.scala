@@ -21,7 +21,7 @@ object StatUtilities {
       */
     for ( (matching, docIdsentIds) <- matchings;
           (docId, count) <- docIdsentIds.groupBy(w => w._1).mapValues(_.size).toList
-          if ( docId != phenoLabel)
+          if ( docId != phenoLabel && count > 1)
         ) yield (docId, (matching, count))
   }
 
@@ -31,7 +31,7 @@ object StatUtilities {
       */
     for ( (matching, docIdsentIds) <- matchings;
           (docIdsentId, count) <- docIdsentIds.groupBy(w => w).mapValues(_.size).toList
-          if ( docIdsentId._1 != phenoLabel)
+          if ( docIdsentId._1 != phenoLabel && count > 1)
         ) yield (docIdsentId._1, (matching, count))
   }
 

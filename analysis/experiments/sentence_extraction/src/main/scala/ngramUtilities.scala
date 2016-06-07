@@ -26,13 +26,15 @@ object NgramUtilities {
     (1 until (n + 1)).flatMap(ind => takeNgram(sent, ind)).toList
   }
 
-  def splitNgram(lines: String, takeN: ((String, Int), Int) => List[(String, Int)], n: Int): (Int, List[(String, Int)]) = {
+  def splitNgram( lines: String,
+                  takeN: ((String, Int), Int) => List[(String, Int)],
+                  n: Int): (Int, (List[(String, Int)], List[(String, Int)])) = {
     /** Split the input sentence to the following format.
-      * (docId, List[(ngram, sentId)])
+      * (docId, List[(ngram, sentId)], List[(ngram, sentId)])
       */
     val (docId, alines): (Int, List[(String, Int)]) = splitLines(lines)
     val ngrams: List[(String, Int)] = alines.flatMap(sentence => takeN(sentence, n))
-    (docId, ngrams)
+    (docId, (ngrams, alines))
   }
 
   def splitPheno(lines: String): (String, Int) = {

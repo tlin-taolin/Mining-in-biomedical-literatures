@@ -17,21 +17,21 @@ cp_data_cloud:
 	gcloud compute copy-files ../../data/hp/parsed_name ${HOST}:data/
 cp_jar_cloud:
 	sbt package
-	gcloud compute copy-files target/scala-2.10/ngram-statistics_2.10-1.0.jar ${HOST}:
+	gcloud compute copy-files target/scala-2.10/token-sentences_2.10-1.0.jar ${HOST}:
 	gcloud compute copy-files Makefile ${HOST}:
 cp_data_hdfs:
 	hadoop fs -put data
 run-cloud:
-	hadoop fs -rm -r -f result
+	hadoop fs -rm -r -f matching_sentence
 	spark-submit \
-		--class NgramLevel \
+		--class ExtractSentence \
 		--master yarn \
 		--deploy-mode client\
 		--num-executors 25 \
 		--executor-cores 3 \
 		--driver-memory 8g \
 		--executor-memory 8g \
-		ngram-statistics_2.10-1.0.jar
+		token-sentences_2.10-1.0.jar
 
 
 ssh_tunnel:
@@ -49,13 +49,13 @@ cp_data_g5k:
 	scp -r ../../data/hp/parsed_name tlin@access.grid5000.fr:${G5K}/data/
 cp_code_g5k:
 	sbt package
-	scp target/scala-2.10/ngram-statistics_2.10-1.0.jar tlin@access.grid5000.fr:${G5K}/ngram/code/
+	scp target/scala-2.10/token-sentences_2.10-1.0.jar tlin@access.grid5000.fr:${G5K}/ngram/code/
 	scp Makefile tlin@access.grid5000.fr:${G5K}/ngram/
 cp_code_g5k_hdfs:
 	hg5k --putindfs ../data .
 run_code_g5k:
-	  spark_g5k --scala_job code/ngram-statistics_2.10-1.0.jar \
-				--main_class NgramLevel \
+	  spark_g5k --scala_job code/token-sentences_2.10-1.0.jar \
+				--main_class ExtractSentence \
  			  	--exec_params \
 				num-executors=40 \
 				executor-cores=6 \

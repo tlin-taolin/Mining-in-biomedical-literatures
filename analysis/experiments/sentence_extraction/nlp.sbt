@@ -1,4 +1,4 @@
-name := "Ngram Statistics"
+name := "Token Sentences"
 
 version := "1.0"
 

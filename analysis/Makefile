@@ -6,6 +6,8 @@ pmcdoc_preprocessing:
 hp_preprocessing:
 	python tasks/preprocess_hp_pipeline.py
 	mkdir -p figures/graph; mv *.pdf figures/graph/
+mp_preprocessing:
+	python tasks/preprocess_mp_pipeline.py
 
 analyze_hp_graph:
 	python tasks/process_hp_graph.py
@@ -21,6 +23,7 @@ extract_word2vec_distance:
 
 extract_graphs_similarity:
 	python tasks/extract_graphs_similarity.py
+
 
 ############ Debug (ALL) ############
 generate_randgraph:
